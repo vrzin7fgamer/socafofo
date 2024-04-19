@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE-edge">
+  <meta name="viewport" content="width-device-width, initial-scale=1.0">
+  <title>sophia corna</title>
+  <style>
+    .painel {
+    margin: autor;
+     background-color: white;
+      width: 500px;
+      height: 500px;
+      border-radius: 20px;
+      text-align: center;
+      padding-top: 50px;
+      font-family: italic;
+    }
+    body {
+      background-color: gray;
+    }
+    #sim {
+      height: 40px;
+      width: 60px;
+      background: red;
+      border: 2px solid white;
+      border-radius: 10px;
+      color: white;
+      margin-left: -50px;
+    }
+    #nao {
+      position: absolute;
+      height: 40px;
+      width: 60px;
+      background: red;
+      border 2px solid white;
+      border-radius: 10px;
+      color: white;
+      margin-left: 10px;
+    }
+  #km {
+    height: 200px;
+    width: 200px;
+  }
+  </style>
 
+</head>
+<body>
+
+<div class="painel">
+  <h1>sophia, você é corna?</h1> 
+ <img id="km" src="https://telegra.ph/file/f428d274a95de0cff0b4f.jpg">
+
+  <h2>sophiazinha responde clicando no botao abaixo de sim ou nao</h2>
+ <a href="https://youtu.be/uFIAhwY5EEk?si=Ty47pyQaxiVVk-YJ"><button id="sim"> Sim! </button></a>
+  <button onmouseover="fuja()" id="nao"> Nao! </button>
+  
+
+</div>
+
+<script>
+  
+  function fuja(){
+    var botaonao = document.getElementById("nao")
+    
+    var largurardajanela = window.innerWidth;
+    var alturarjanela = window.innerHeight;
+    
+    var maxX = largurardajanela - botaonao.offsetWidth;
+    var maxY = alturarjanela - botaonao.offsetHeight;
+    
+    var aleatorioX = Math.floor(Math.random() * maxX);
+    var aleatorioY = Math.floor(Math.random() * maxY);
+    
+    botaonao.style.left = aleatorioX + "px";
+    botaonao.style.top = aleatorioY + "px";
+  }
+  
+</script>
+
+</body>
+</html>
