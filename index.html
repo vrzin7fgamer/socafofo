@@ -4,18 +4,17 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE-edge">
   <meta name="viewport" content="width-device-width, initial-scale=1.0">
-  <title>sophia corna</title>
+  <title>isa fofinha :)</title>
   <style>
     .painel {
-      margin: auto;
-      background-color: white;
+    margin: autor;
+     background-color: white;
       width: 500px;
       height: 500px;
       border-radius: 20px;
       text-align: center;
       padding-top: 50px;
       font-family: italic;
-      position: relative; /* Adicionado */
     }
     body {
       background-color: gray;
@@ -34,54 +33,49 @@
       height: 40px;
       width: 60px;
       background: red;
-      border: 2px solid white; /* Corrigido */
+      border 2px solid white;
       border-radius: 10px;
       color: white;
       margin-left: 10px;
     }
-    #relogio {
-      position: absolute;
-      bottom: 10px; /* Distância da parte inferior */
-      left: 50%; /* Centralizado horizontalmente */
-      transform: translateX(-50%); /* Centralizado horizontalmente */
-      font-size: 20px;
-    }
+  #km {
+    height: 200px;
+    width: 200px;
+  }
   </style>
+
 </head>
 <body>
 
 <div class="painel">
   <h1>isinha quer ser minha amiga😍?</h1> 
-  <img id="km" src="https://telegra.ph/file/d0fdec576c2a292b19766.jpg">
+ <img id="km" src="https://telegra.ph/file/d0fdec576c2a292b19766.jpg">
 
   <h2>isa responde clicando no botao abaixo de sim ou nao</h2>
-  <a href="https://telegra.ph/file/95fcf76371bddb77c59fa.jpg"><button id="sim"> Sim! </button></a>
+ <a href="https://telegra.ph/file/95fcf76371bddb77c59fa.jpg"><button id="sim"> Sim! </button></a>
   <button onmouseover="fuja()" id="nao"> Nao! </button>
   
-  <div id="relogio"></div> <!-- Novo elemento para o relógio -->
 
 </div>
 
 <script>
-  // Função para adicionar zero à esquerda para números menores que 10
-  function addZero(i) {
-    if (i < 10) {
-      i = "0" + i;
-    }
-    return i;
+  
+  function fuja(){
+    var botaonao = document.getElementById("nao")
+    
+    var largurardajanela = window.innerWidth;
+    var alturarjanela = window.innerHeight;
+    
+    var maxX = largurardajanela - botaonao.offsetWidth;
+    var maxY = alturarjanela - botaonao.offsetHeight;
+    
+    var aleatorioX = Math.floor(Math.random() * maxX);
+    var aleatorioY = Math.floor(Math.random() * maxY);
+    
+    botaonao.style.left = aleatorioX + "px";
+    botaonao.style.top = aleatorioY + "px";
   }
-
-  // Função para atualizar o relógio
-  function updateTime() {
-    var now = new Date();
-    var hours = addZero(now.getHours());
-    var minutes = addZero(now.getMinutes());
-    var seconds = addZero(now.getSeconds());
-    document.getElementById('relogio').innerHTML = hours + ":" + minutes + ":" + seconds;
-    setTimeout(updateTime, 1000); // Atualiza a cada segundo
-  }
-
-  updateTime(); // Chama a função pela primeira vez
+  
 </script>
 
 </body>
