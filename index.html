@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo da Velha</title>
+    <title>Cartinha para Sophia</title>
     <style>
         * {
             margin: 0;
@@ -12,246 +12,211 @@
         }
 
         body {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4, #f7bbc5); /* Gradiente rosa */
             font-family: 'Arial', sans-serif;
-            background: radial-gradient(circle, #ff0000, #8b0000);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #fff;
+            padding: 20px;
+            position: relative;
             overflow: hidden;
+            color: #fff;
+            text-align: center;
+            flex-direction: column;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
-            animation: neonGlow 1.5s infinite alternate;
+        .neon-text {
+            font-size: 4em;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #ff0099, 0 0 10px #ff0099, 0 0 15px #ff0099, 0 0 20px #ff0099, 0 0 30px #ff0099, 0 0 40px #ff0099;
+            margin-bottom: 40px;
+            margin-top: 50px;
         }
 
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 10px;
+        .container {
+            text-align: center;
+            max-width: 100%;
+            width: 320px;
+            z-index: 10;
+        }
+
+        .cartinha {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
             margin-bottom: 20px;
-            perspective: 1000px;
         }
 
-        .cell {
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 0, 0, 0.2); /* Células em vermelho translúcido */
-            border-radius: 10px;
+        .foto {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.3em;
+            color: #ff6f61;
+        }
+
+        .interacao {
+            margin-bottom: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            font-weight: bold;
-            color: transparent;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: transform 0.4s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-            transform-style: preserve-3d;
-        }
-
-        .cell:hover {
-            background-color: rgba(255, 0, 0, 0.4); /* Efeito hover em vermelho */
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-            transform: rotateY(10deg);
-        }
-
-        .cell.active {
-            color: #FFF;
-            background: linear-gradient(145deg, #ff0000, #8b0000); /* Cores em vermelho e preto */
-            transform: rotateX(360deg);
-        }
-
-        .cell:active {
-            transform: scale(0.9);
         }
 
         button {
-            background-color: #000;
+            background-color: #ff6f61;
             color: #fff;
-            padding: 10px 30px;
-            font-size: 1.2rem;
-            border-radius: 40px;
             border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            font-size: 1em;
+            width: 80%;
+            transition: 0.3s;
         }
 
         button:hover {
-            background-color: #ff0000; /* Efeito hover em vermelho */
+            background-color: #e65c50;
         }
 
-        button:active {
-            transform: scale(0.95);
+        .texto {
+            font-size: 1em;
+            color: #333;
         }
 
-        #message {
-            font-size: 1.5rem;
-            margin-top: 15px;
-            animation: pulseText 1s infinite alternate;
+        .texto p {
+            margin-bottom: 20px;
         }
 
-        @keyframes neonGlow {
-            from {
-                text-shadow: 0 0 20px #ff0000, 0 0 40px #8b0000, 0 0 60px #ff0000;
+        .texto button {
+            background-color: #4CAF50;
+            padding: 10px 20px;
+            font-size: 1em;
+            width: 80%;
+        }
+
+        .texto button:hover {
+            background-color: #45a049;
+        }
+
+        h2:after {
+            content: " ❤️";
+        }
+
+        .foto:after {
+            content: " ❤";
+            font-size: 1.8em;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 1.2em;
             }
-            to {
-                text-shadow: 0 0 30px #ff0000, 0 0 50px #8b0000, 0 0 70px #ff0000;
+
+            .foto {
+                width: 60px;
+                height: 60px;
+            }
+
+            .texto {
+                font-size: 0.9em;
+            }
+
+            button {
+                font-size: 0.9em;
             }
         }
 
-        @keyframes pulseText {
-            from {
-                transform: scale(1);
-            }
-            to {
-                transform: scale(1.1);
-            }
+        /* Animação de fantasmas */
+        .ghost {
+            position: absolute;
+            top: 0;
+            width: 50px;
+            height: 50px;
+            animation: ghostMove 10s linear infinite;
         }
 
-        @keyframes particleEffect {
+        .ghost img {
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes ghostMove {
             0% {
+                left: -60px;
                 opacity: 1;
-                transform: translateY(0) scale(1);
+            }
+            50% {
+                left: 50%;
+                opacity: 0.7;
+                transform: translateX(-50%);
             }
             100% {
-                opacity: 0;
-                transform: translateY(-200px) scale(0.5);
+                left: 100%;
+                opacity: 1;
             }
-        }
-
-        .particle {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background-color: #ff0000; /* Partículas vermelhas */
-            border-radius: 50%;
-            animation: particleEffect 1.5s forwards;
-            pointer-events: none;
         }
     </style>
 </head>
 <body>
-
-    <h1>Jogo da Velha</h1>
-
-    <div class="game-board" id="game-board">
-        <div class="cell" id="cell-1" onclick="playerMove(1)"></div>
-        <div class="cell" id="cell-2" onclick="playerMove(2)"></div>
-        <div class="cell" id="cell-3" onclick="playerMove(3)"></div>
-        <div class="cell" id="cell-4" onclick="playerMove(4)"></div>
-        <div class="cell" id="cell-5" onclick="playerMove(5)"></div>
-        <div class="cell" id="cell-6" onclick="playerMove(6)"></div>
-        <div class="cell" id="cell-7" onclick="playerMove(7)"></div>
-        <div class="cell" id="cell-8" onclick="playerMove(8)"></div>
-        <div class="cell" id="cell-9" onclick="playerMove(9)"></div>
+    <!-- Texto neon -->
+    <div class="neon-text">
+        Te Amo
     </div>
 
-    <p id="message"></p>
-    
-    <button onclick="resetGame()">Reiniciar Jogo</button>
+    <div class="container">
+        <div class="cartinha">
+            <div class="header">
+                <img src="https://i.imgur.com/AVOhGuw.jpeg" alt="Sua Foto" class="foto">
+                <h2>Para Sophia</h2>
+            </div>
+            <div class="interacao">
+                <button id="abrirButton">Abrir Cartinha</button>
+            </div>
+            <div id="textoCartinha" class="texto" style="display:none;">
+                <p>Eu te amo tanto, Sophia, mais que as estrelas no céu, mais que a lua que brilha toda noite. Você é tudo para mim. <3</p>
+                <button id="fecharButton">Fechar Cartinha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fantasmas animados passando na tela -->
+    <div class="ghost">
+        <img src="https://img.icons8.com/ios/452/ghost.png" alt="Fantasma">
+    </div>
+    <div class="ghost" style="animation-delay: 3s;">
+        <img src="https://img.icons8.com/ios/452/ghost.png" alt="Fantasma">
+    </div>
+    <div class="ghost" style="animation-delay: 6s;">
+        <img src="https://img.icons8.com/ios/452/ghost.png" alt="Fantasma">
+    </div>
 
     <script>
-        const board = ["", "", "", "", "", "", "", "", ""];
-        let currentPlayer = "X";
-        let gameOver = false;
+        document.getElementById('abrirButton').addEventListener('click', function() {
+            document.getElementById('textoCartinha').style.display = 'block';
+            this.style.display = 'none';
+        });
 
-        const winningCombinations = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6]
-        ];
-
-        function playerMove(cell) {
-            if (board[cell - 1] === "" && currentPlayer === "X" && !gameOver) {
-                makeMove(cell - 1, "X");
-                if (!checkWinner()) {
-                    setTimeout(robotMove, 700); // Robô joga após 700ms
-                }
-            }
-        }
-
-        function robotMove() {
-            let availableMoves = board.map((val, index) => val === "" ? index : null).filter(val => val !== null);
-            if (availableMoves.length > 0 && !gameOver) {
-                let randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-                makeMove(randomMove, "O");
-                checkWinner();
-            }
-        }
-
-        function makeMove(index, player) {
-            board[index] = player;
-            const cell = document.getElementById(`cell-${index + 1}`);
-            cell.innerText = player;
-            cell.classList.add('active');
-            currentPlayer = currentPlayer === "X" ? "O" : "X";
-        }
-
-        function checkWinner() {
-            let winner = null;
-            winningCombinations.forEach(combination => {
-                if (board[combination[0]] && board[combination[0]] === board[combination[1]] && board[combination[1]] === board[combination[2]]) {
-                    winner = board[combination[0]];
-                }
-            });
-
-            if (winner) {
-                showWinnerEffect(winner);
-                gameOver = true;
-                return true;
-            } else if (!board.includes("")) {
-                document.getElementById('message').innerText = "Empate! 😮";
-                document.getElementById('message').style.color = "#fff";
-                gameOver = true;
-                return true;
-            }
-
-            return false;
-        }
-
-        function showWinnerEffect(winner) {
-            document.getElementById('message').innerText = `${winner} venceu! 🎉`;
-            document.getElementById('message').style.color = winner === "X" ? "#fff" : "#fff";
-            
-            // Criar partículas na tela
-            for (let i = 0; i < 100; i++) {
-                const particle = document.createElement("div");
-                particle.classList.add("particle");
-                particle.style.left = `${Math.random() * window.innerWidth}px`;
-                particle.style.top = `${Math.random() * window.innerHeight}px`;
-                document.body.appendChild(particle);
-
-                setTimeout(() => particle.remove(), 1500);
-            }
-        }
-
-        function resetGame() {
-            board.fill("");
-            document.querySelectorAll(".cell").forEach(cell => {
-                cell.innerText = "";
-                cell.classList.remove('active');
-            });
-            currentPlayer = "X";
-            gameOver = false;
-            document.getElementById('message').innerText = "";
-        }
+        document.getElementById('fecharButton').addEventListener('click', function() {
+            document.getElementById('textoCartinha').style.display = 'none';
+            document.getElementById('abrirButton').style.display = 'block';
+        });
     </script>
 </body>
-</html>
-
-
-
-> isa Safadinha 
+                                                                                                                                         </html>
