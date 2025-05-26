@@ -1,301 +1,47 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rede Sociais - Zoro</title>
-    <style>
-        /* Importando fonte personalizada */
-        @import url('https://fonts.googleapis.com/css2?family=Pirata+One&display=swap');
-
-        /* Estilos gerais */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Pirata One', cursive;
-        }
-
-        body {
-            background-color: #0b3d0b;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
-            padding: 20px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Efeito de névoa verde */
-        .fog {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: url('https://i.imgur.com/4QotMzd.jpeg') repeat;
-            animation: fogAnimation 10s infinite linear;
-            opacity: 0.3;
-        }
-
-        @keyframes fogAnimation {
-            0% { background-position: 0 0; }
-            100% { background-position: 100px 100px; }
-        }
-
-        /* Estilização do container */
-        .container {
-            max-width: 400px;
-            width: 100%;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Símbolo do One Piece - Parte superior com CSS */
-        .onepiece-symbol {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 60px;
-            border: 3px solid #00ff00;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #0b3d0b;
-            animation: rotateSymbol 10s linear infinite;
-            z-index: 5;
-        }
-
-        .onepiece-symbol:before {
-            content: "☠"; /* Símbolo de caveira */
-            font-size: 30px;
-            color: #fff;
-        }
-
-        @keyframes rotateSymbol {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            100% { transform: translateX(-50%) rotate(360deg); }
-        }
-
-        /* Estilização do relógio */
-        .clock {
-            font-size: 28px;
-            font-weight: bold;
-            color: #FFD700; /* Amarelo para chamar atenção */
-            margin: 20px 0;
-            animation: clockAnimation 1s infinite;
-        }
-
-        @keyframes clockAnimation {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        /* Imagem de perfil */
-        .profile-img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid #00ff00;
-        }
-
-        h1 {
-            margin-top: 10px;
-            font-size: 22px;
-        }
-
-        p {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        /* Silhuetas do Zoro nas laterais */
-        .side-silhouette {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 150px;
-            height: 150px;
-            background-size: contain;
-            opacity: 0.2;
-            z-index: 1;
-        }
-
-        .left-side {
-            left: 10px;
-        }
-
-        .right-side {
-            right: 10px;
-        }
-
-        /* Botões de links */
-        .link-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: linear-gradient(45deg, #004d00, #00ff00);
-            color: white;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 5px;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .link-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 10px #00ff00;
-        }
-
-        /* Ícones dos botões */
-        .icon {
-            width: 24px;
-            height: 24px;
-        }
-
-        /* Animação de corte de espada */
-        .cut-effect {
-            position: absolute;
-            width: 120%;
-            height: 5px;
-            background: linear-gradient(to right, transparent, #00ff00, transparent);
-            top: 50%;
-            left: -10%;
-            opacity: 0;
-            transform: rotate(0deg);
-            transition: 0.3s;
-        }
-
-        .link-btn:active .cut-effect {
-            opacity: 1;
-            animation: slash 0.2s ease-out;
-        }
-
-        @keyframes slash {
-            0% { transform: rotate(0deg) translateY(0); }
-            100% { transform: rotate(45deg) translateY(-20px); }
-        }
-
-        /* Frase do Zoro na parte inferior */
-        .quote {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            font-size: 16px;
-            font-style: italic;
-            text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.6);
-            color: #fff;
-            z-index: 5;
-        }
-
-        /* Responsividade para celulares */
-        @media (max-width: 500px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                width: 100%;
-                padding: 10px;
-            }
-
-            .profile-img {
-                width: 80px;
-                height: 80px;
-            }
-
-            .clock {
-                font-size: 20px;
-            }
-
-            .link-btn {
-                font-size: 16px;
-                padding: 10px;
-            }
-
-            .quote {
-                font-size: 14px;
-            }
-
-            .onepiece-symbol {
-                width: 50px;
-                height: 50px;
-            }
-
-            .side-silhouette {
-                width: 100px;
-                height: 100px;
-            }
-        }
-    </style>
+    <title>Dear Sun</title>
+    <meta name="language" content="en-US">
+    <meta name="title" content="Dear Sun">
+    <meta name="description" content="Collecting this wasn't easy — your star is my motivation to keep going! Contributions are welcome too.">
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/sun0225SUN/photos/img/20210715233345.png">
+    <link rel="stylesheet" href="css/love.css">
 </head>
+
+
 <body>
 
-    <div class="fog"></div> <!-- Efeito de névoa -->
-    <div class="onepiece-symbol"></div> <!-- Símbolo de One Piece com CSS -->
+    <audio autoplay="autopaly" loop="loop" id="audios" preload="auto">
+        <source src="MP3/1.mp3" />
+    </audio>
 
-    <div class="side-silhouette left-side"></div>
-    <div class="side-silhouette right-side"></div>
+    <div class="container" onselectstart="return false;" unselectable="on" style="-moz-user-select:none;">
 
-    <div class="container">
-        <img src="https://i.imgur.com/M5q5gNL.jpeg" alt="Zoro" class="profile-img">
-        <h1>Rede Sociais</h1>
-        <p>Apenas um estudante buscando melhoria</p>
+        <div class="body_left">
+            <img src="images/biubiubiu.gif" alt="" ondragstart='return false;'>
+        </div>
 
-        <!-- Relógio de estilo One Piece -->
-        <div class="clock" id="clock"></div>
-
-        <!-- Botões com ícones e efeito de corte -->
-        <a href="https://wa.me/+5511917768966?text=OPA%20VRZIN" class="link-btn" target="_blank">
-            <img src="https://i.imgur.com/LlEN8I5.jpeg" class="icon" alt="WhatsApp"> WhatsApp
-            <div class="cut-effect"></div>
-        </a>
-
-        <a href="https://www.tiktok.com/@vrzin.xs?_t=ZM-8taMM64P337&_r=1" class="link-btn" target="_blank">
-            <img src="https://i.imgur.com/NePGUP7.jpeg" class="icon" alt="TikTok"> TikTok
-            <div class="cut-effect"></div>
-        </a>
-
-        <a href="https://www.instagram.com/vrzin_staff?igsh=MXFwY3E1b2pkMW8zbg==" class="link-btn" target="_blank">
-            <img src="https://i.imgur.com/R9KTDEW.jpeg" class="icon" alt="Instagram"> Instagram
-            <div class="cut-effect"></div>
-        </a>
+        <div class="body_center love">
+            <div class="block">
+                <div class="div1"></div>
+                <div class="div2"></div>
+                <div class="div3"></div>
+                <div class="div4"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="quote">
-        "Um verdadeiro guerreiro nunca desvia do seu caminho." - Zoro
+    <div class="footer">
+        <div class="border">
+            <div class="border-top"></div>
+            <div class="border-bottom"></div>
+        </div>
     </div>
 
-    <script>
-        // Função do relógio
-        function updateClock() {
-            const clock = document.getElementById('clock');
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            clock.textContent = `${hours}:${minutes}:${seconds}`;
-        }
-
-        setInterval(updateClock, 1000);
-        updateClock();  // Chama para mostrar o relógio imediatamente
-    </script>
+    <script type="text/javascript" src="js/love.js"></script>
 
 </body>
-    </html>
+
+</html>
