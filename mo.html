@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Te Amo</title>
+  <style>
+    body {
+      margin: 0;
+      background: #15001a;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      text-align: center;
+    }
+
+    .container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .hearts {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: url('https://cdn-icons-png.flaticon.com/512/833/833472.png') no-repeat center;
+      background-size: contain;
+      animation: float 10s linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-10vh) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    .title {
+      position: absolute;
+      top: 5%;
+      width: 100%;
+      font-size: 2.5em;
+      color: #ff66cc;
+      font-weight: bold;
+      z-index: 3;
+      text-shadow: 0 0 10px #ff66cc;
+    }
+
+    .frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80vw;
+      max-width: 500px;
+      height: 70vh;
+      border-radius: 20px;
+      border: 3px solid #ff66cc;
+      box-shadow: 0 0 20px #ff66cc;
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .footer-text {
+      position: absolute;
+      bottom: 4%;
+      width: 100%;
+      font-size: 1.5em;
+      color: #ff99dd;
+      z-index: 3;
+      animation: fadeInOut 5s infinite;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hearts" id="hearts-container"></div>
+
+    <div class="title">EU TE AMO LUIZA!</div>
+
+    <div class="frame">
+      <video src="https://files.catbox.moe/tleo68.mp4" autoplay loop controls></video>
+    </div>
+
+    <div class="footer-text">enquanto eu respirar continuarei te amando</div>
+  </div>
+
+  <script>
+    const heartContainer = document.getElementById('hearts-container');
+
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.animationDuration = 5 + Math.random() * 5 + "s";
+      heart.style.opacity = Math.random();
+      heartContainer.appendChild(heart);
+
+      setTimeout(() => heart.remove(), 10000);
+    }
+
+    setInterval(createHeart, 300);
+  </script>
+</body>
+</html>
