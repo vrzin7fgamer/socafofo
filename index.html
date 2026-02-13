@@ -179,7 +179,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let roomId, playerSymbol, playerName, lastMessageTime = 0, score = {X:0, O:0, Empates:0}, lastActivity = Date.now(), winningCells = [];
+let roomId, playerSymbol, playerName, lastMessageTime = 0, score = {X:0, O:0, Empates:0}, lastActivity = Date.now(), winningCells = [], countdownInterval;
 
 const boardDiv = document.getElementById("board");
 for(let i=0;i<9;i++){
@@ -316,6 +316,7 @@ window.joinRoom = async function(){
           if (data.winner === "Empate") score.Empates++;
           else score[data.winner]++;
           updateScore();
+          // Animações de fim de jogo
           if (data.winner === "Empate") {
             boardDiv.classList.add("tie");
             setTimeout(() => boardDiv.classList.remove("tie"), 3000);
@@ -328,6 +329,8 @@ window.joinRoom = async function(){
               document.querySelectorAll(".cell").forEach(c => c.classList.remove("win", "lose"));
             }, 3000);
           }
+          // Reinício automático em 5s
+          startCountdown();
         } else {
           status.innerText = data.turn === playerSymbol ? "Sua vez" : "Esperando o outro jogador...";
         }
@@ -394,6 +397,7 @@ window.sendMessage = function(){
 window.resetGame = async function(){
   const password = prompt("Digite a senha para reiniciar:");
   if (password !== "2026") return alert("Senha incorreta!");
+  clearInterval(countdownInterval);
   const roomRef = ref(db, "rooms/" + roomId);
   await update(roomRef, {
     board: ["","","","","","","","",""],
@@ -410,9 +414,36 @@ window.resetGame = async function(){
 window.startNewGame = async function(){
   const password = prompt("Digite a senha para nova partida:");
   if (password !== "2026") return alert("Senha incorreta!");
+  clearInterval(countdownInterval);
   const newRoomId = Date.now() + Math.random().toString(36).substr(2, 9);
   const newLink = `${window.location.origin}${window.location.pathname}?room=${newRoomId}`;
-  window.location.href = newLink; // Redireciona para nova sala
+  window.location.href = newLink;
+}
+
+function startCountdown() {
+  let count = 5;
+  countdownInterval = setInterval(() => {
+    document.getElementById("status").innerText = `Reiniciando em ${count}...`;
+    count--;
+    if (count < 0) {
+      clearInterval(countdownInterval);
+      resetGameAuto();
+    }
+  }, 1000);
+}
+
+async function resetGameAuto() {
+  const roomRef = ref(db, "rooms/" + roomId);
+  await update(roomRef, {
+    board: ["","","","","","","","",""],
+    turn: "X",
+    winner: null,
+    lastActivity: Date.now()
+  });
+  document.getElementById("resetBtn").style.display = "none";
+  document.getElementById("status").innerText = "Jogo reiniciado! Você é " + playerSymbol;
+  boardDiv.classList.remove("tie");
+  document.querySelectorAll(".cell").forEach(c => c.classList.remove("win", "lose"));
 }
 
 function updateScore() {
@@ -426,10 +457,4 @@ function checkConnection() {
 }
 
 window.copyLink = function(){
-  const link = document.getElementById("shareLink").innerText;
-  navigator.clipboard.writeText(link).then(() => alert("Link copiado!"));
-}
-</script>
-
-</body>
-</html>
+  const link = document.getElementById
