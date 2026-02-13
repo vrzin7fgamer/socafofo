@@ -447,14 +447,4 @@ async function resetGameAuto() {
 }
 
 function updateScore() {
-  document.getElementById("score").innerText = `Placar: X:${score.X}, O:${score.O}, Empates:${score.Empates}`;
-}
-
-function checkConnection() {
-  if (Date.now() - lastActivity > 30000) {
-    document.getElementById("status").innerText += " (Jogador desconectado)";
-  }
-}
-
-window.copyLink = function(){
-  const link = document.getElementById
+  document.getElementById("score").innerText = `Placar: X:${score.X}, O:${score.O}, Empates:${score
