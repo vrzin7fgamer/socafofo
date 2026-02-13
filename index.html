@@ -29,6 +29,7 @@ body{
   grid-template-columns:repeat(3,1fr);
   gap:10px;
   margin:15px 0;
+  transition:transform 0.5s ease; /* Para animação de empate */
 }
 
 .cell{
@@ -40,6 +41,52 @@ body{
   align-items:center;
   justify-content:center;
   cursor:pointer;
+  transition:background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cell:hover{
+  background:rgba(255,255,255,0.3);
+}
+
+.cell.clicked{
+  animation:fadeIn 0.5s ease;
+}
+
+.cell.win{
+  animation:pulseGreen 1s infinite;
+  box-shadow:0 0 20px green;
+}
+
+.cell.lose{
+  animation:shakeRed 0.5s infinite;
+  box-shadow:0 0 20px red;
+}
+
+.board.tie{
+  animation:spin 3s ease;
+  background:yellow;
+  border-radius:15px;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+@keyframes pulseGreen{
+  0%,100%{background:rgba(0,255,0,0.5);}
+  50%{background:rgba(0,255,0,1);}
+}
+
+@keyframes shakeRed{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-5px);}
+  75%{transform:translateX(5px);}
+}
+
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
 }
 
 #messages{
@@ -72,6 +119,16 @@ button{
   word-break:break-all;
   margin:10px 0;
 }
+
+#resetBtn{
+  display:none;
+  margin-top:10px;
+}
+
+#score{
+  font-size:14px;
+  margin-bottom:10px;
+}
 </style>
 </head>
 
@@ -90,9 +147,12 @@ button{
   <button onclick="copyLink()">Copiar Link</button>
 </div>
 
+<div id="score">Placar: X:0, O:0, Empates:0</div>
 <h3 id="status">Digite seu nome e clique em Entrar...</h3>
 
 <div class="board" id="board"></div>
+
+<button id="resetBtn" onclick="resetGame()">Jogar Novamente</button>
 
 <h3>💬 Chat</h3>
 <div id="messages"></div>
@@ -103,7 +163,7 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue, push, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, update, onValue, onChildChanged, push, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBAO358MTNVV5jZEPx1480YM6QjPaiiNKE",
@@ -118,7 +178,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let roomId, playerSymbol, playerName;
+let roomId, playerSymbol, playerName, lastMessageTime = 0, score = {X:0, O:0, Empates:0}, lastActivity = Date.now(), winningCells = [];
 
 const boardDiv = document.getElementById("board");
 for(let i=0;i<9;i++){
@@ -126,6 +186,63 @@ for(let i=0;i<9;i++){
   cell.className="cell";
   cell.onclick=()=>makeMove(i);
   boardDiv.appendChild(cell);
+}
+
+// Fallback para aspect-ratio em navegadores antigos
+if (!CSS.supports('aspect-ratio: 1')) {
+  document.querySelectorAll('.cell').forEach(cell => {
+    cell.style.paddingBottom = '100%';
+    cell.style.height = '0';
+  });
+}
+
+// Sons de memes brasileiros engraçados (sintetizados)
+function playMemeSound(type) {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+
+  if (type === 'X') { // "Ué" - surpresa engraçada
+    oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime + 0.2);
+    oscillator.type = 'sawtooth';
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.5);
+  } else if (type === 'O') { // "Olha o bicho vindo" - susto cômico
+    oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime + 0.2);
+    oscillator.type = 'square';
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.7);
+  } else if (type === 'win') { // Risada "HAHAHA"
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        oscillator.frequency.setValueAtTime(500 + i * 100, audioCtx.currentTime + i * 0.2);
+        oscillator.type = 'triangle';
+        oscillator.start(audioCtx.currentTime + i * 0.2);
+        oscillator.stop(audioCtx.currentTime + i * 0.2 + 0.3);
+      }, i * 200);
+    }
+  } else if (type === 'lose') { // "Nãooooo" - frustração
+    oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+    oscillator.frequency.setValueAtTime(250, audioCtx.currentTime + 0.2);
+    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime + 0.4);
+    oscillator.type = 'sawtooth';
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 1);
+  } else if (type === 'tie') { // "Ué" lento para empate
+    oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime + 0.3);
+    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime + 0.6);
+    oscillator.type = 'sawtooth';
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 1.2);
+  }
 }
 
 // Gera ID de sala automaticamente ou pega da URL
@@ -139,62 +256,104 @@ window.joinRoom = async function(){
   if (!playerName) return alert("Digite seu nome!");
 
   roomId = getRoomId();
+  console.log("Room ID gerado/usado:", roomId);
+
   const roomRef = ref(db, "rooms/" + roomId);
-  const snapshot = await get(roomRef);
+  try {
+    const snapshot = await get(roomRef);
+    console.log("Snapshot exists:", snapshot.exists());
 
-  if (!snapshot.exists()) {
-    await set(roomRef, {
-      board: ["","","","","","","","",""],
-      turn: "X",
-      winner: null,
-      players: { X: playerName }
-    });
-    playerSymbol = "X";
-  } else {
-    const data = snapshot.val();
-    if (!data.players.O) {
-      await update(roomRef, { players: { ...data.players, O: playerName } });
+    if (!snapshot.exists()) {
+      console.log("Criando nova sala...");
+      await set(roomRef, {
+        board: ["","","","","","","","",""],
+        turn: "X",
+        winner: null,
+        players: { X: playerName },
+        score: {X:0, O:0, Empates:0},
+        lastActivity: Date.now()
+      });
+      playerSymbol = "X";
+    } else {
+      const data = snapshot.val();
+      console.log("Sala existente, dados:", data);
+      if (data.players && data.players.O) {
+        return alert("Sala cheia! Peça ao amigo para criar uma nova sala.");
+      }
+      await update(roomRef, { players: { ...data.players, O: playerName }, lastActivity: Date.now() });
       playerSymbol = "O";
-    } else {
-      playerSymbol = data.players.X === playerName ? "X" : "O";
+      score = data.score || {X:0, O:0, Empates:0};
     }
-  }
 
-  // Mostra link compartilhável se criou a sala
-  if (playerSymbol === "X") {
-    const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-    document.getElementById("shareLink").innerText = link;
-    document.getElementById("shareSection").style.display = "block";
-  }
+    // onDisconnect para limpeza
+    onDisconnect(roomRef).update({ players: { [playerSymbol]: null }, lastActivity: Date.now() });
 
-  document.getElementById("status").innerText = "Você é " + playerSymbol;
+    // Mostra link compartilhável se criou a sala
+    if (playerSymbol === "X") {
+      const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+      document.getElementById("shareLink").innerText = link;
+      document.getElementById("shareSection").style.display = "block";
+    }
 
-  onValue(roomRef, (snap) => {
-    const data = snap.val();
-    if (!data) return;
+    document.getElementById("status").innerText = "Você é " + playerSymbol;
+    updateScore();
 
-    document.querySelectorAll(".cell").forEach((c, i) => {
-      c.innerText = data.board[i];
+    // Listeners otimizados
+    onChildChanged(roomRef, (snap) => {
+      const key = snap.key;
+      const val = snap.val();
+      if (key === 'board') {
+        document.querySelectorAll(".cell").forEach((c, i) => {
+          c.innerText = val[i];
+        });
+      } else if (key === 'turn' || key === 'winner') {
+        const data = snap.val();
+        if (data.winner) {
+          status.innerText = data.winner === "Empate" ? "Empate!" : "Vencedor: " + data.winner;
+          playMemeSound(data.winner === "Empate" ? 'tie' : (data.winner === playerSymbol ? 'win' : 'lose'));
+          document.getElementById("resetBtn").style.display = "block";
+          if (data.winner === "Empate") score.Empates++;
+          else score[data.winner]++;
+          updateScore();
+          // Animações de fim de jogo
+          if (data.winner === "Empate") {
+            boardDiv.classList.add("tie");
+            setTimeout(() => boardDiv.classList.remove("tie"), 3000);
+          } else {
+            winningCells.forEach(i => {
+              const cell = document.querySelectorAll(".cell")[i];
+              cell.classList.add(data.winner === playerSymbol ? "win" : "lose");
+            });
+            setTimeout(() => {
+              document.querySelectorAll(".cell").forEach(c => c.classList.remove("win", "lose"));
+            }, 3000);
+          }
+        } else {
+          status.innerText = data.turn === playerSymbol ? "Sua vez" : "Esperando o outro jogador...";
+        }
+      } else if (key === 'lastActivity') {
+        lastActivity = val;
+        checkConnection();
+      }
     });
 
-    if (data.winner) {
-      status.innerText = data.winner === "Empate" ? "Empate!" : "Vencedor: " + data.winner;
-    } else {
-      status.innerText = data.turn === playerSymbol ? "Sua vez" : "Esperando o outro jogador...";
-    }
-  });
-
-  onValue(ref(db, "rooms/" + roomId + "/chat"), (snap) => {
-    messages.innerHTML = "";
-    const chat = snap.val() || {};
-    Object.values(chat).forEach(msg => {
-      messages.innerHTML += `<div>${msg}</div>`;
+    onValue(ref(db, "rooms/" + roomId + "/chat"), (snap) => {
+      messages.innerHTML = "";
+      const chat = snap.val() || {};
+      const msgs = Object.values(chat).slice(-20);
+      msgs.forEach(msg => {
+        messages.innerHTML += `<div>${msg}</div>`;
+      });
+      messages.scrollTop = messages.scrollHeight;
     });
-    messages.scrollTop = messages.scrollHeight; // Rola para o final
-  });
+  } catch (error) {
+    console.error("Erro ao entrar na sala:", error);
+    alert("Erro de rede. Tente recarregar a página.");
+  }
 }
 
 window.makeMove = async function(i){
+  if (Date.now() - lastActivity > 30000) return alert("Jogador desconectado!");
   const roomRef = ref(db, "rooms/" + roomId);
   const snap = await get(roomRef);
   const data = snap.val();
@@ -204,23 +363,56 @@ window.makeMove = async function(i){
   data.board[i] = playerSymbol;
   data.turn = playerSymbol === "X" ? "O" : "X";
   data.winner = checkWinner(data.board);
+  data.lastActivity = Date.now();
 
   await update(roomRef, data);
+  playMemeSound(playerSymbol); // Som de meme para jogada
+  document.querySelectorAll(".cell")[i].classList.add("clicked");
+  setTimeout(() => document.querySelectorAll(".cell")[i].classList.remove("clicked"), 500);
 }
 
 function checkWinner(b) {
   const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
   for (let c of combos) {
-    if (b[c[0]] && b[c[0]] === b[c[1]] && b[c[0]] === b[c[2]]) return b[c[0]];
+    if (b[c[0]] && b[c[0]] === b[c[1]] && b[c[0]] === b[c[2]]) {
+      winningCells = c; // Salva células vencedoras para animação
+      return b[c[0]];
+    }
   }
   if (b.every(cell => cell !== "")) return "Empate";
   return null;
 }
 
 window.sendMessage = function(){
-  if (!messageInput.value) return;
-  push(ref(db, "rooms/" + roomId + "/chat"), playerName + ": " + messageInput.value);
+  if (!messageInput.value || Date.now() - lastMessageTime < 1000) return;
+  lastMessageTime = Date.now();
+  const timestamp = new Date().toLocaleTimeString();
+  push(ref(db, "rooms/" + roomId + "/chat"), `${playerName} (${timestamp}): ${messageInput.value}`);
   messageInput.value = "";
+}
+
+window.resetGame = async function(){
+  const roomRef = ref(db, "rooms/" + roomId);
+  await update(roomRef, {
+    board: ["","","","","","","","",""],
+    turn: "X",
+    winner: null,
+    lastActivity: Date.now()
+  });
+  document.getElementById("resetBtn").style.display = "none";
+  document.getElementById("status").innerText = "Jogo reiniciado! Você é " + playerSymbol;
+  boardDiv.classList.remove("tie");
+  document.querySelectorAll(".cell").forEach(c => c.classList.remove("win", "lose"));
+}
+
+function updateScore() {
+  document.getElementById("score").innerText = `Placar: X:${score.X}, O:${score.O}, Empates:${score.Empates}`;
+}
+
+function checkConnection() {
+  if (Date.now() - lastActivity > 30000) {
+    document.getElementById("status").innerText += " (Jogador desconectado)";
+  }
 }
 
 window.copyLink = function(){
