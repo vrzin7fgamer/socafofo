@@ -64,6 +64,14 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
+
+#shareLink{
+  background:rgba(255,255,255,0.2);
+  padding:10px;
+  border-radius:10px;
+  word-break:break-all;
+  margin:10px 0;
+}
 </style>
 </head>
 
@@ -71,13 +79,18 @@ button{
 
 <div class="container">
 
-<h2>🔥 Jogo da Velha 🔥</h2>
+<h2>🔥 Jogo da Velha Online 🔥</h2>
 
-<input id="room" placeholder="Código da sala">
 <input id="nameInput" placeholder="Seu nome">
-<button onclick="joinRoom()">Entrar</button>
+<button onclick="joinRoom()">Entrar e Criar/Entrar na Sala</button>
 
-<h3 id="status">Aguardando...</h3>
+<div id="shareSection" style="display:none;">
+  <p>Compartilhe este link com seu amigo:</p>
+  <div id="shareLink"></div>
+  <button onclick="copyLink()">Copiar Link</button>
+</div>
+
+<h3 id="status">Digite seu nome e clique em Entrar...</h3>
 
 <div class="board" id="board"></div>
 
@@ -115,76 +128,104 @@ for(let i=0;i<9;i++){
   boardDiv.appendChild(cell);
 }
 
+// Gera ID de sala automaticamente ou pega da URL
+function getRoomId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('room') || (Date.now() + Math.random().toString(36).substr(2, 9));
+}
+
 window.joinRoom = async function(){
-  roomId=document.getElementById("room").value;
-  playerName=document.getElementById("nameInput").value;
+  playerName = document.getElementById("nameInput").value;
+  if (!playerName) return alert("Digite seu nome!");
 
-  const roomRef=ref(db,"rooms/"+roomId);
-  const snapshot=await get(roomRef);
+  roomId = getRoomId();
+  const roomRef = ref(db, "rooms/" + roomId);
+  const snapshot = await get(roomRef);
 
-  if(!snapshot.exists()){
-    await set(roomRef,{
-      board:["","","","","","","","",""],
-      turn:"X",
-      winner:null
+  if (!snapshot.exists()) {
+    await set(roomRef, {
+      board: ["","","","","","","","",""],
+      turn: "X",
+      winner: null,
+      players: { X: playerName }
     });
-    playerSymbol="X";
-  }else{
-    playerSymbol="O";
+    playerSymbol = "X";
+  } else {
+    const data = snapshot.val();
+    if (!data.players.O) {
+      await update(roomRef, { players: { ...data.players, O: playerName } });
+      playerSymbol = "O";
+    } else {
+      playerSymbol = data.players.X === playerName ? "X" : "O";
+    }
   }
 
-  document.getElementById("status").innerText="Você é "+playerSymbol;
+  // Mostra link compartilhável se criou a sala
+  if (playerSymbol === "X") {
+    const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+    document.getElementById("shareLink").innerText = link;
+    document.getElementById("shareSection").style.display = "block";
+  }
 
-  onValue(roomRef,(snap)=>{
-    const data=snap.val();
-    if(!data) return;
+  document.getElementById("status").innerText = "Você é " + playerSymbol;
 
-    document.querySelectorAll(".cell").forEach((c,i)=>{
-      c.innerText=data.board[i];
+  onValue(roomRef, (snap) => {
+    const data = snap.val();
+    if (!data) return;
+
+    document.querySelectorAll(".cell").forEach((c, i) => {
+      c.innerText = data.board[i];
     });
 
-    if(data.winner){
-      status.innerText="Vencedor: "+data.winner;
-    }else{
-      status.innerText=data.turn===playerSymbol?"Sua vez":"Esperando jogador...";
+    if (data.winner) {
+      status.innerText = data.winner === "Empate" ? "Empate!" : "Vencedor: " + data.winner;
+    } else {
+      status.innerText = data.turn === playerSymbol ? "Sua vez" : "Esperando o outro jogador...";
     }
   });
 
-  onValue(ref(db,"rooms/"+roomId+"/chat"),(snap)=>{
-    messages.innerHTML="";
-    const chat=snap.val()||{};
-    Object.values(chat).forEach(msg=>{
-      messages.innerHTML+=`<div>${msg}</div>`;
+  onValue(ref(db, "rooms/" + roomId + "/chat"), (snap) => {
+    messages.innerHTML = "";
+    const chat = snap.val() || {};
+    Object.values(chat).forEach(msg => {
+      messages.innerHTML += `<div>${msg}</div>`;
     });
+    messages.scrollTop = messages.scrollHeight; // Rola para o final
   });
 }
 
-window.makeMove=async function(i){
-  const roomRef=ref(db,"rooms/"+roomId);
-  const snap=await get(roomRef);
-  const data=snap.val();
+window.makeMove = async function(i){
+  const roomRef = ref(db, "rooms/" + roomId);
+  const snap = await get(roomRef);
+  const data = snap.val();
 
-  if(!data || data.turn!==playerSymbol || data.board[i]) return;
+  if (!data || data.turn !== playerSymbol || data.board[i]) return;
 
-  data.board[i]=playerSymbol;
-  data.turn=playerSymbol==="X"?"O":"X";
-  data.winner=checkWinner(data.board);
+  data.board[i] = playerSymbol;
+  data.turn = playerSymbol === "X" ? "O" : "X";
+  data.winner = checkWinner(data.board);
 
-  await update(roomRef,data);
+  await update(roomRef, data);
 }
 
-function checkWinner(b){
-  const combos=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  for(let c of combos){
-    if(b[c[0]] && b[c[0]]===b[c[1]] && b[c[0]]===b[c[2]]) return b[c[0]];
+function checkWinner(b) {
+  const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for (let c of combos) {
+    if (b[c[0]] && b[c[0]] === b[c[1]] && b[c[0]] === b[c[2]]) return b[c[0]];
   }
+  if (b.every(cell => cell !== "")) return "Empate";
   return null;
 }
 
-window.sendMessage=function(){
-  if(!messageInput.value) return;
-  push(ref(db,"rooms/"+roomId+"/chat"),playerName+": "+messageInput.value);
-  messageInput.value="";
+window.sendMessage = function(){
+  if (!messageInput.value) return;
+  push(ref(db, "rooms/" + roomId + "/chat"), playerName + ": " + messageInput.value);
+  messageInput.value = "";
+}
+
+window.copyLink = function(){
+  const link = document.getElementById("shareLink").innerText;
+  navigator.clipboard.writeText(link).then(() => alert("Link copiado!"));
 }
 </script>
 
