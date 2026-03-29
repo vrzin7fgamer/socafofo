@@ -31,16 +31,13 @@ canvas{
 .box{
   background:linear-gradient(145deg,#111,#000);
   border:1px solid #ffd70033;
-  box-shadow:0 0 30px rgba(255,215,0,0.2), inset 0 0 10px rgba(255,215,0,0.1);
+  box-shadow:0 0 30px rgba(255,215,0,0.2);
   padding:25px;
   border-radius:20px;
   width:90%;
   max-width:320px;
   text-align:center;
-  transform: perspective(800px) rotateX(5deg);
 }
-
-.box h3{color:#ffd700;}
 
 input{
   width:100%;
@@ -52,17 +49,13 @@ input{
   color:white;
 }
 
-input::placeholder{
-  color:rgba(255,255,255,0.3);
-}
-
 button{
   width:100%;
   padding:12px;
   margin-top:10px;
   border:none;
   border-radius:10px;
-  background:linear-gradient(90deg,#ffd700,#ffcc00);
+  background:#ffd700;
   color:black;
   font-weight:bold;
 }
@@ -78,8 +71,6 @@ header{
   padding:10px;
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  font-size:14px;
 }
 
 #onlineList{
@@ -91,7 +82,6 @@ header{
 
 .onlineUser{
   display:flex;
-  align-items:center;
   gap:5px;
 }
 
@@ -105,14 +95,13 @@ header{
 #typingView{
   font-size:12px;
   color:#ffd700;
-  padding-left:12px;
+  padding-left:10px;
 }
 
-/* MAIS ESPAÇO NAS MENSAGENS */
 #msgs{
   flex:1;
   overflow-y:auto;
-  padding:15px 12px 20px;
+  padding:15px;
   display:flex;
   flex-direction:column;
   gap:14px;
@@ -139,37 +128,29 @@ header{
   padding:12px;
   border-radius:12px;
   font-size:16px;
-  max-width:80%;
-  line-height:1.5;
 }
 
-.msg small{
-  color:#ffd700;
-  display:block;
-  margin-bottom:5px;
-}
-
-/* INPUT MELHORADO */
 #inputArea{
   display:flex;
   gap:10px;
   padding:15px;
   background:rgba(0,0,0,0.7);
-  backdrop-filter:blur(10px);
-  border-top:1px solid rgba(255,255,255,0.05);
 }
 
 #msg{
   flex:1;
   padding:16px;
-  font-size:17px;
+  font-size:16px;
   border-radius:12px;
 }
 
 #inputArea button{
-  width:75px;
-  padding:12px;
-  border-radius:12px;
+  width:80px;
+}
+
+.reply{
+  font-size:13px;
+  opacity:0.6;
 }
 </style>
 </head>
@@ -180,23 +161,23 @@ header{
 
 <div id="pass" class="center">
 <div class="box">
-<h3>🔐 Acesso</h3>
-<input id="senha" placeholder="Digite a senha">
+<h3>🔐 Senha</h3>
+<input id="senha">
 <button onclick="checkPass()">Entrar</button>
 </div>
 </div>
 
 <div id="age" class="center" style="display:none">
 <div class="box">
-<h3>🔞 Área 18+</h3>
+<h3>🔞 +18</h3>
 <button onclick="enter()">Continuar</button>
 </div>
 </div>
 
 <div id="nameScreen" class="center" style="display:none">
 <div class="box">
-<h3>👤 Seu Nome</h3>
-<input id="nameInput" placeholder="Digite seu nome">
+<h3>👤 Nome</h3>
+<input id="nameInput">
 <button onclick="saveName()">Entrar</button>
 </div>
 </div>
@@ -218,7 +199,7 @@ header{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, set, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, set, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "SUA_API_KEY",
@@ -237,6 +218,7 @@ const typingRef = ref(db,"typing");
 let user = localStorage.getItem("user");
 let id = Math.random().toString(36).slice(2,7);
 let lastMsg = 0;
+let replyingTo = null;
 
 function getColor(name){
   let colors=["#ffd700","#ffcc00","#ffaa00","#ff8800","#ffee00"];
@@ -257,8 +239,8 @@ window.enter=()=>{
 
 window.saveName=()=>{
   let nome=nameInput.value.trim();
-  if(nome.length<3){alert("Nome muito curto");return;}
-  user=nome.slice(0,12);
+  if(nome.length<3){alert("Nome curto");return;}
+  user=nome;
   localStorage.setItem("user",user);
   nameScreen.style.display="none";
   start();
@@ -266,15 +248,31 @@ window.saveName=()=>{
 
 function start(){
   chat.style.display="flex";
+  startOnline();
+}
+
+// ONLINE PROFISSIONAL
+function startOnline(){
   let userRef = ref(db,"online/"+id);
-  set(userRef,user);
+
+  set(userRef,{
+    name:user,
+    lastActive:Date.now()
+  });
+
   onDisconnect(userRef).remove();
+
+  setInterval(()=>{
+    set(userRef,{
+      name:user,
+      lastActive:Date.now()
+    });
+  },10000);
 }
 
 function now(){
   let d=new Date();
-  return d.getHours().toString().padStart(2,'0')+":"+
-         d.getMinutes().toString().padStart(2,'0');
+  return d.getHours()+":"+d.getMinutes();
 }
 
 window.sendMsg=()=>{
@@ -285,19 +283,15 @@ window.sendMsg=()=>{
   if(nowTime-lastMsg<800) return;
   lastMsg=nowTime;
 
-  if(text==="/limpa"){
-    remove(chatRef);
-    msg.value="";
-    return;
-  }
-
   push(chatRef,{
     user,
     text,
     time:now(),
-    senha:"julia12k"
+    reply:replyingTo||null
   });
 
+  replyingTo=null;
+  msg.placeholder="Digite aqui...";
   msg.value="";
 }
 
@@ -314,12 +308,21 @@ onChildAdded(chatRef,data=>{
   let avatar=document.createElement("div");
   avatar.className="avatar";
   avatar.style.background=getColor(m.user);
-  avatar.innerText=m.user[0].toUpperCase();
+  avatar.innerText=m.user[0];
 
   let div=document.createElement("div");
   div.className="msg";
 
-  div.innerHTML=`<small>${m.user} • ${m.time}</small>${m.text}`;
+  div.innerHTML=`
+    <small>${m.user} • ${m.time}</small>
+    ${m.reply?`<div class="reply">↪ ${m.reply}</div>`:""}
+    <div>${m.text}</div>
+  `;
+
+  div.onclick=()=>{
+    replyingTo=m.user;
+    msg.placeholder="Respondendo "+m.user+"...";
+  }
 
   row.appendChild(avatar);
   row.appendChild(div);
@@ -328,18 +331,23 @@ onChildAdded(chatRef,data=>{
   msgs.scrollTop=msgs.scrollHeight;
 });
 
+// ONLINE
 onValue(onlineRef,s=>{
   let data=s.val()||{};
   onlineList.innerHTML="";
+  let now=Date.now();
 
-  Object.values(data).forEach(nome=>{
+  Object.values(data).forEach(u=>{
+    if(now-u.lastActive>30000) return;
+
     let div=document.createElement("div");
     div.className="onlineUser";
-    div.innerHTML=`<div class="dot"></div><span>${nome}</span>`;
+    div.innerHTML=`<div class="dot"></div><span>${u.name}</span>`;
     onlineList.appendChild(div);
   });
 });
 
+// DIGITANDO
 window.typing=()=>{
   set(ref(db,"typing/"+id),user);
   setTimeout(()=>set(ref(db,"typing/"+id),null),1500);
@@ -348,7 +356,10 @@ window.typing=()=>{
 onValue(typingRef,s=>{
   let d=s.val()||{};
   let names=Object.values(d).filter(n=>n&&n!==user);
-  typingView.innerText=names.length?names.join(", ")+" está digitando...":"";
+
+  typingView.innerText=names.length
+    ? "@"+names.join(", @")+" está digitando..."
+    : "";
 });
 
 // partículas
@@ -376,4 +387,4 @@ draw();
 </script>
 
 </body>
-</html>
+  </html>
